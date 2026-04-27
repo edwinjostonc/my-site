@@ -127,6 +127,7 @@ export default function ScrollVideo({ src }) {
   const videoRef     = useRef(null)
   const canvasRef    = useRef(null)
   const labelRef     = useRef(null)
+  const isMobile     = window.innerWidth < 768
 
   /* ── Canvas-driven fallback (no video file needed) ─────────── */
   useEffect(() => {
@@ -145,7 +146,7 @@ export default function ScrollVideo({ src }) {
     window.addEventListener('resize', resize, { passive: true })
 
     const ctx = canvas.getContext('2d')
-    drawFrame(ctx, canvas.width, canvas.height, 0)
+    drawFrame(ctx, canvas.width, canvas.height, isMobile ? 0.08 : 0)
 
     trigger = ScrollTrigger.create({
       trigger: cont,
@@ -192,7 +193,7 @@ export default function ScrollVideo({ src }) {
   return (
     <div
       ref={containerRef}
-      style={{ height: '260vh', position: 'relative', zIndex: 10 }}
+      style={{ height: isMobile ? '150vh' : '260vh', position: 'relative', zIndex: 10 }}
     >
       {/* Sticky viewport */}
       <div style={{
