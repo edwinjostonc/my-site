@@ -105,7 +105,7 @@ function ScanLine() {
 }
 
 /* ── Dual-colour ambient particles ──────────────────────────── */
-function Particles() {
+function Particles({ mobile = false }) {
   const refA = useRef()
   const refB = useRef()
 
@@ -122,8 +122,8 @@ function Particles() {
       }
       return arr
     }
-    return [gen(100), gen(60)]
-  }, [])
+    return [gen(mobile ? 50 : 100), gen(mobile ? 30 : 60)]
+  }, [mobile])
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
@@ -156,39 +156,41 @@ function Particles() {
 }
 
 /* ── Full scene ──────────────────────────────────────────────── */
-function Scene({ scrollRef }) {
+function Scene({ scrollRef, mobile }) {
   return (
     <>
-      <Stars radius={110} depth={55} count={600} factor={3.5} saturation={0} fade speed={0.25} />
+      <Stars radius={110} depth={55} count={mobile ? 200 : 600} factor={3.5} saturation={0} fade speed={0.25} />
       <ambientLight intensity={0.06} />
       <CinematicCamera scrollRef={scrollRef} />
-      <HoloGrid />
-      <ScanLine />
+      {!mobile && <HoloGrid />}
+      {!mobile && <ScanLine />}
       <MouseParallax>
-        <NeuralNet />
-        <Particles />
+        <NeuralNet mobile={mobile} />
+        <Particles mobile={mobile} />
       </MouseParallax>
-      <EffectComposer>
-        <Bloom luminanceThreshold={0.18} luminanceSmoothing={0.9} intensity={0.7} />
-      </EffectComposer>
+      {!mobile && (
+        <EffectComposer>
+          <Bloom luminanceThreshold={0.18} luminanceSmoothing={0.9} intensity={0.7} />
+        </EffectComposer>
+      )}
     </>
   )
 }
 
 /* ── Export ──────────────────────────────────────────────────── */
-export default function Background3D({ scrollRef }) {
+export default function Background3D({ scrollRef, mobile = false }) {
   return (
     <Safe3D>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
         <Canvas
           camera={{ position: [0, 0, 12], fov: 60 }}
-          dpr={[0.7, 1.0]}
+          dpr={mobile ? [0.5, 0.75] : [0.7, 1.0]}
           gl={{ antialias: false, alpha: true, powerPreference: 'high-performance', stencil: false }}
-          performance={{ min: 0.5 }}
+          performance={{ min: mobile ? 0.3 : 0.5 }}
         >
           <AdaptiveDpr pixelated />
           <Suspense fallback={null}>
-            <Scene scrollRef={scrollRef} />
+            <Scene scrollRef={scrollRef} mobile={mobile} />
           </Suspense>
         </Canvas>
       </div>

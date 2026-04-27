@@ -1381,11 +1381,11 @@ export default function App() {
   const [show3D, setShow3D] = useState(false)
 
   useEffect(() => {
-    if (!isDesktop) return
     const cb = () => setShow3D(true)
+    const delay = isDesktop ? 800 : 1400
     const id = 'requestIdleCallback' in window
-      ? requestIdleCallback(cb, { timeout: 1000 })
-      : setTimeout(cb, 800)
+      ? requestIdleCallback(cb, { timeout: delay + 400 })
+      : setTimeout(cb, delay)
     return () => ('requestIdleCallback' in window ? cancelIdleCallback : clearTimeout)(id)
   }, [isDesktop])
 
@@ -1409,8 +1409,8 @@ export default function App() {
       {/* Film grain texture overlay */}
       <div aria-hidden="true" className="noise" />
 
-      {isDesktop && show3D
-        ? <Suspense fallback={null}><Background3D scrollRef={scrollRef} /></Suspense>
+      {show3D
+        ? <Suspense fallback={null}><Background3D scrollRef={scrollRef} mobile={!isDesktop} /></Suspense>
         : <AmbientCanvas />
       }
       <CursorHalo />

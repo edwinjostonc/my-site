@@ -3,12 +3,12 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Float } from '@react-three/drei'
 
-const LAYERS    = [3, 6, 8, 6, 3]
+const LAYERS_DESKTOP = [3, 6, 8, 6, 3]
+const LAYERS_MOBILE  = [2, 4, 5, 4, 2]
 const SPACING_X = 1.55
 const SPACING_Y = 0.52
 const NODE_R    = 0.09
 const PULSE_R   = 0.038
-const PULSE_N   = 45
 
 const LAYER_COLORS = ['#22d3ee', '#818cf8', '#a78bfa', '#c084fc', '#e0f2fe']
 const EDGE_COLORS  = ['#06b6d4', '#7c3aed', '#9333ea', '#a855f7']
@@ -19,7 +19,7 @@ const _v = new THREE.Vector3()
 const _m = new THREE.Matrix4()
 const _c = new THREE.Color()
 
-function buildNet() {
+function buildNet(LAYERS) {
   const starts = []
   let cum = 0
   LAYERS.forEach(c => { starts.push(cum); cum += c })
@@ -52,12 +52,15 @@ function buildNet() {
   return { pos, edgeGeoms, edges, total: cum, starts }
 }
 
-export default function NeuralNet() {
+export default function NeuralNet({ mobile = false }) {
   const groupRef = useRef()
   const nodeRef  = useRef()
   const pulseRef = useRef()
 
-  const { pos, edgeGeoms, edges, total } = useMemo(buildNet, [])
+  const LAYERS   = mobile ? LAYERS_MOBILE : LAYERS_DESKTOP
+  const PULSE_N  = mobile ? 20 : 45
+
+  const { pos, edgeGeoms, edges, total } = useMemo(() => buildNet(LAYERS), [LAYERS])
 
   const pulses = useMemo(() => Array.from({ length: PULSE_N }, (_, i) => {
     const e = edges[i % edges.length]
@@ -68,7 +71,7 @@ export default function NeuralNet() {
   useEffect(() => {
     if (!nodeRef.current) return
     let idx = 0
-    LAYERS.forEach((count, li) => {
+    LAYERS.forEach((count, li) => {  // eslint-disable-line react-hooks/exhaustive-deps
       _c.set(LAYER_COLORS[li])
       for (let ni = 0; ni < count; ni++) {
         _m.setPosition(pos[idx])
